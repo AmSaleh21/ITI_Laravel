@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 
@@ -18,8 +19,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
-Route::get('/posts/create/', [PostController::class, 'create'])->name('posts.create');
-Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
-Route::get('/posts/edit/{postID}', [PostController::class, 'edit'])->name('posts.edit');
-Route::get('/posts/{postID}', [PostController::class, 'show'])->name('posts.show');
+Route::resource("/posts", PostController::class);
+Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->name('comments.store');
+Route::get('/posts/{post}/comments/{comment}/delete', [CommentController::class, 'delete'])->name('comments.delete');
+Route::get('/posts/{post}/comments/{comment}/restore', [CommentController::class, 'restore'])->name('comments.restore');
+Route::get('/posts/{post}/delete', [PostController::class, 'delete'])->name('posts.delete');
+Route::get('/posts/{post}/restore', [PostController::class, 'restore'])->name('posts.restore');

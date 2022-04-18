@@ -2,38 +2,136 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Post;
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
+use App\Models\User;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
+use Illuminate\Routing\Redirector;
 
 class PostController extends Controller
 {
-    private $posts = [
-        ['id' => 1, 'title' => 'Laravel', 'post_creator' => 'Ahmed', 'created_at' => '2022-04-16 10:37:00'],
-        ['id' => 2, 'title' => 'PHP', 'post_creator' => 'Mohamed', 'created_at' => '2022-04-16 10:37:00'],
-        ['id' => 3, 'title' => 'Javascript', 'post_creator' => 'Ali', 'created_at' => '2022-04-16 10:37:00'],
-    ];
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Application|Factory|View|Response
+     */
+    public function index(): View|Factory|Response|Application
+    {
+        //
+        $posts = Post::withTrashed()->paginate(4);
+        return view("posts")->with(['posts' => $posts]);
+    }
 
-    public function index()
-    {        
-        return view('posts.index', [
-            'posts' => $this->posts,
-        ]);
-    }
-    public function create()
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return Application|Factory|View
+     */
+    public function create(): Factory|View|Application
     {
-        return view('posts.create');
+        //
+        $users = User::all();
+        return view('create-post')->with(['users'=>$users]);
     }
-    public function show($postID)
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \App\Http\Requests\StorePostRequest  $request
+     * @return Application|RedirectResponse|Redirector
+     */
+    public function store(StorePostRequest $request)
     {
-        return view('posts.show', [
-            'posts' => $this->posts,
-            'postID'=> $postID
-        ]);
+        //
+        $post = new Post($request->all());
+        $post->save();
+        return to_route('posts.index');
     }
-    public function edit($postID)
+
+    /**
+     * Display the specified resource.
+     *
+     * @param Post $post
+     * @return Application|Factory|View
+     */
+    public function show(Post $post): View|Factory|Application
     {
-        return view('posts.edit', [
-            'posts' => $this->posts,
-            'postID'=> $postID
-        ]);
+        //
+        $users = User::all();
+        return view('view-post')->with(['post'=>$post, 'users'=>$users]);
     }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param Post $post
+     * @return JsonResponse
+     */
+    public function showAjax(int $postId): JsonResponse
+    {
+        //
+        $post = Post::with('user')->find($postId);
+        return response()->json(['data'=>$post]);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param Post $post
+     * @return Application|Factory|View
+     */
+    public function edit(Post $post)
+    {
+        //
+        $users = User::all();
+        return view('edit-post')->with(['post'=>$post, 'users'=>$users]);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \App\Http\Requests\UpdatePostRequest  $request
+     * @param Post $post
+     * @return Application|RedirectResponse|Redirector
+     */
+    public function update(UpdatePostRequest $request, Post $post)
+    {
+        $post->update($request->all());
+        return to_route("posts.show", ['post' => $post]);
+    }
+
+    public function delete(Post $post) {
+        return view('delete-post')->with(['post'=>$post]);
+    }
+    /**
+     * Soft deletes the specified resource
+     *
+     * @param Post $post
+     * @return Application|RedirectResponse|Redirector
+     */
+    public function destroy(Post $post)
+    {
+        //
+        $post->delete();
+        return to_route('posts.index');
+    }
+    /**
+     * Soft deletes the specified resource
+     *
+     * @param Post $post
+     * @return Application|RedirectResponse|Redirector
+     */
+    public function restore(int $post): Redirector|RedirectResponse|Application
+    {
+        //
+        Post::withTrashed()->find($post)->restore();
+        return to_route('posts.index');
+    }
+
 }
