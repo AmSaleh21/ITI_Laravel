@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Laravel\Socialite\Facades\Socialite;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +21,13 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return to_route("posts.index");
 });
+
+Route::get('/auth/redirect', function () {
+    return Socialite::driver('github')->redirect();
+});
+
+Route::get('/auth/callback', [LoginController::class, 'githubLogin']);
+
 Route::middleware('auth')->group(function() {
     Route::resource("/posts", PostController::class);
     Route::get('/posts/{post}/delete', [PostController::class, 'delete'])->name('posts.delete');
