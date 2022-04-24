@@ -8,12 +8,15 @@ class StorePostRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     * Deny if making more than 3 posts
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
-        return false;
+        $user = auth()->user();
+        $postsCount = $user->postsCount();
+        return $postsCount < 3;
     }
 
     /**
@@ -21,10 +24,14 @@ class StorePostRequest extends FormRequest
      *
      * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            //
+            'title' => 'required|min:3|unique:posts,title',
+            'description' => 'required|min:10',
+            'created_by' => 'required|exists:users,id',
+            'tags' => 'required|string',
+            'image' => 'required|file|mimes:jpg,png'
         ];
     }
 }

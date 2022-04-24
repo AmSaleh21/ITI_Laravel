@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -43,14 +44,19 @@ class PostController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\StorePostRequest  $request
+     * @param StorePostRequest $request
      * @return Application|RedirectResponse|Redirector
      */
-    public function store(StorePostRequest $request)
+    public function store(StorePostRequest $request): Redirector|RedirectResponse|Application
     {
-        //
-        $post = new Post($request->all());
+        $validated = $request->validated();
+        $post = new Post($validated);
+        $post->generateSlug();
+        $path = 'posts/'. $post->slug . '-' . $request->image->getClientOriginalName();
+        $request->image->storeAs('public/posts', $post->slug . '-' . $request->image->getClientOriginalName());
+        $post->image = $path;
         $post->save();
+        $post->syncTags(explode(',', $request->get('tags')));
         return to_route('posts.index');
     }
 
@@ -100,13 +106,23 @@ class PostController extends Controller
      * @param Post $post
      * @return Application|RedirectResponse|Redirector
      */
-    public function update(UpdatePostRequest $request, Post $post)
+    public function update(UpdatePostRequest $request, Post $post): Redirector|RedirectResponse|Application
     {
-        $post->update($request->all());
+        if ($request->has('image')) {
+            $oldImage = $post->image;
+            Storage::delete($oldImage);
+        }
+        $validated = $request->validated();
+        if ($validated['image'] == null) {
+            $validated['image'] = $post->image;
+        }
+        $post->update($validated);
+        $post->syncTags(explode(',', $request->get('tags')));
         return to_route("posts.show", ['post' => $post]);
     }
 
-    public function delete(Post $post) {
+    public function delete(Post $post): Factory|View|Application
+    {
         return view('delete-post')->with(['post'=>$post]);
     }
     /**
@@ -115,21 +131,20 @@ class PostController extends Controller
      * @param Post $post
      * @return Application|RedirectResponse|Redirector
      */
-    public function destroy(Post $post)
+    public function destroy(Post $post): Redirector|RedirectResponse|Application
     {
-        //
         $post->delete();
         return to_route('posts.index');
     }
+
     /**
      * Soft deletes the specified resource
      *
-     * @param Post $post
+     * @param int $post
      * @return Application|RedirectResponse|Redirector
      */
     public function restore(int $post): Redirector|RedirectResponse|Application
     {
-        //
         Post::withTrashed()->find($post)->restore();
         return to_route('posts.index');
     }

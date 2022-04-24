@@ -11,7 +11,7 @@ class UpdateCommentRequest extends FormRequest
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(): bool
     {
         return false;
     }
@@ -24,7 +24,7 @@ class UpdateCommentRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+
         ];
     }
 }

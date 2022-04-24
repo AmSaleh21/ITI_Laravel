@@ -6,6 +6,7 @@ use App\Models\Comment;
 use App\Http\Requests\StoreCommentRequest;
 use App\Http\Requests\UpdateCommentRequest;
 use App\Models\Post;
+use Illuminate\Http\RedirectResponse;
 
 class CommentController extends Controller
 {
@@ -16,7 +17,6 @@ class CommentController extends Controller
      */
     public function index()
     {
-        //
     }
 
     /**
@@ -26,7 +26,6 @@ class CommentController extends Controller
      */
     public function create()
     {
-        //
     }
 
     /**
