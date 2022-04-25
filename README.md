@@ -8,9 +8,8 @@ A blog created with Laravel, part if the ITI training program
     - [Labs](#labs)
         - [Lab 1](#lab-1)
         - [Lab 2](#lab-2)
-- [My process](#my-process)
-    - [Built with](#built-with)
-    - [Libraries](#Libraries)
+        - [Lab 3](#lab-3)
+        - [Lab 4](#lab-4)
 
 
 ## Overview
@@ -59,40 +58,49 @@ with 500 records
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-## process
-1) Clone the project
+### Lab 3:
 
-   ``` git clone https://github.com/AmSaleh21/ITI_Laravel.git ```
+- Add [validation](https://laravel.com/docs/master/validation#creating-form-requests) using form request files on Store & Update 
+  - Title & description are required. 
+  - minimum length for title is 3 chars and unique. 
+  - minimum length for description is 10 chars.
+  - updating a post without changing Title it still works.
+  - no one hacks you and send an id of post creator that does not exist in the database.
+  - display [error messages](https://laravel.com/docs/master/validation#quick-displaying-the-validation-errors) of failed validation
 
-2) install [composer](https://getcomposer.org/)
-3) run , to create database data
-    ```
-    php artisan db:seed
-    ```
-4) in the project directory run the following
-    ```
-    $composer install && composer update
-    $composer dump-autoload
-    $php artisan serve
-    ```
-<p align="right">(<a href="#top">back to top</a>)</p>
+- Use php artisan ui:auth bootstrap –auth , to scaffold the auth pages
+- Modify on the current navbar , and make it use the laravel default auth navbar.
+- and also we need the link to All Posts (Do whatever you see suits the case)
+- Add Authentication middleware on all posts routes. 
+- and make anyone who isn’t authenticated to redirect back to login page.
 
-### Built with
+- use '_slug_' , using this package the slug will be generated from the post title. 
+  - users aren’t allowed to fill slug or send it in the request.
+  - Show the slug column In Index page
 
-* [Laravel](https://www.laravel.com/)
-* [JavaScript](https://www.javascript.com/)
-* [Bootstrap](https://getbootstrap.com/)
-* [FontAwesome v.4.1.7](https://fontawesome.com)
+- create [Queue Job](https://laravel.com/docs/master/queues#introduction) called '_PruneOldPostsJob_' that when dispatched it deletes posts that are created from 2 years ago
+- [schedule](https://laravel.com/docs/master/scheduling#scheduling-queued-jobs) PruneOldPostsJob to run daily at midnight
+- [Upload](https://laravel.com/docs/master/filesystem#file-uploads) image to post , and validate extensions are only (.jpg, .png).
+  - use Storage to store and show images also when updating post we remove the old image. 
+  - when deleting post we remove the old image
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+-- Bonus
 
-### Libraries
+- Make [custom validation rule](https://laravel.com/docs/master/validation#custom-validation-rules) , that makes sure the user is only allowed to create 3 posts and if he exceeded this number we show a validation error message
+- add [Tags](https://github.com/spatie/laravel-tags) to post , the user will enter comma separated tags
 
-* [composer](https://getcomposer.org)
-* [guzzle](https://docs.guzzlephp.org/en/stable)
-* [sanctum](https://laravel.com/docs/9.x/sanctum)
-* [artisan](https://laravel.com/docs/9.x/artisan)
-* [liveWire](https://laravel-livewire.com/)
-* [illuminate](https://packagist.org/packages/illuminate/database)
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+### Lab 4:
+
+- Install Laravel Sanctum.
+- Make endpoints (api/posts GET , api/posts/{id} GET , api/posts POST). 
+  - to get all posts and to get one post and to store a single post.
+- Add Authentication middleware to the endpoints.
+- In the api/posts & api/posts/{id} GET you must use Eloquent Api Resource with pagination.
+- in the response each post must include the post creator info using UserResource.
+- Apply Eager Loading when getting all posts to include the user relation to enhance performance.
+
+- Install Laravel Socialite
+- Allow login with GitHub and store user info. 
+- make sure when logout and login again to not duplicate the records.
+- [authentication and storage](https://laravel.com/docs/master/socialite#authentication-and-storage)
